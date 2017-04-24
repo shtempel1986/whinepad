@@ -1,0 +1,34 @@
+.Excel table {
+  border: solid 1px black;
+  margin: 20px;
+  font-family: sans-serif;
+  font-size: 14px; }
+
+tbody > tr:not(:last-child) > td, th {
+  border-bottom: solid #000 1px; }
+
+td {
+  padding: 4px; }
+
+input {
+  font-family: sans-serif;
+  font-size: 14px;
+  padding: 0; }
+
+.whinepad-logo {
+  display: inline-block;
+  background: purple;
+  height: 69px;
+  position: absolute;
+  top: 0;
+  left: 0; }
+
+* {
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif; }
+
+h1 {
+  padding: 15px 0 0 120px;
+  height: 69px;
+  position: relative; }
