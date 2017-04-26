@@ -1,18 +1,25 @@
-"use strict";
+'use strict';
 
-var _Logo = require("./components/Logo");
+var _Form = require('./components/Form');
 
-var _Logo2 = _interopRequireDefault(_Logo);
+var _Form2 = _interopRequireDefault(_Form);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 ReactDOM.render(React.createElement(
-    "div",
+    'div',
     null,
     React.createElement(
-        "h1",
+        'h1',
         null,
-        "Discover Component Logo!"
+        'Discover Component!'
     ),
-    React.createElement(_Logo2.default, null)
+    React.createElement(
+        'h2',
+        null,
+        'Form '
+    ),
+    React.createElement(_Form2.default, {
+        fields: [{ label: 'Rating', type: 'rating', id: 'rateme' }, { label: 'Greetings', id: 'freetext' }],
+        initialData: { rateme: 4, freetext: 'Hello' } })
 ), document.getElementById("discovery"));
