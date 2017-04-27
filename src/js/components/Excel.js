@@ -4,7 +4,37 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _Actions = require('./Actions');
+
+var _Actions2 = _interopRequireDefault(_Actions);
+
+var _Dialog = require('./Dialog');
+
+var _Dialog2 = _interopRequireDefault(_Dialog);
+
+var _Form = require('./Form');
+
+var _Form2 = _interopRequireDefault(_Form);
+
+var _FormInput = require('./FormInput');
+
+var _FormInput2 = _interopRequireDefault(_FormInput);
+
+var _Rating = require('./Rating');
+
+var _Rating2 = _interopRequireDefault(_Rating);
+
+var _classnames = require('classnames');
+
+var _classnames2 = _interopRequireDefault(_classnames);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -12,9 +42,6 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-/**
- * Created by Павел on 24.04.2017.
- */
 var Excel = function (_React$Component) {
     _inherits(Excel, _React$Component);
 
@@ -23,61 +50,162 @@ var Excel = function (_React$Component) {
 
         var _this = _possibleConstructorReturn(this, (Excel.__proto__ || Object.getPrototypeOf(Excel)).call(this, props));
 
-        _this.displayName = "Excel";
         _this.state = {
             data: _this.props.initialData,
-            sortBy: null,
+            sortby: null, // schema.id
             descending: false,
-            search: false
-        };
-        _this._preSearchData = null;
-        _this._log = [];
-        _this._sort = _this._sort.bind(_this);
-        _this._showEditor = _this._showEditor.bind(_this);
-        // this._toggleSearch = this._toggleSearch.bind(this);
-        _this._save = _this._save.bind(_this);
-        _this._search = _this._search.bind(_this);
-        _this._logSetState = _this._logSetState.bind(_this);
+            edit: null, // [row index, schema.id],
+            dialog: null };
         return _this;
     }
 
     _createClass(Excel, [{
+        key: 'componentWillReceiveProps',
+        value: function componentWillReceiveProps(nextProps) {
+            this.setState({ data: nextProps.initialData });
+        }
+    }, {
+        key: '_fireDataChange',
+        value: function _fireDataChange(data) {
+            this.props.onDataChange(data);
+        }
+    }, {
         key: '_sort',
-        value: function _sort(e) {
-            var column = e.target.cellIndex;
+        value: function _sort(key) {
             var data = Array.from(this.state.data);
-            var descending = this.state.sortBy === column && !this.state.descending;
+            var descending = this.state.sortby === key && !this.state.descending;
             data.sort(function (a, b) {
-                return descending ? a[column] < b[column] ? 1 : -1 : a[column] > b[column] ? 1 : -1;
+                return descending ? a[key] < b[key] ? 1 : -1 : a[key] > b[key] ? 1 : -1;
             });
-            this._logSetState({
+            this.setState({
                 data: data,
-                sortBy: column,
-                descending: descending,
-                edit: null
+                sortby: key,
+                descending: descending
             });
+            this._fireDataChange(data);
         }
     }, {
         key: '_showEditor',
         value: function _showEditor(e) {
-            this._logSetState({
-                edit: {
+            this.setState({ edit: {
                     row: parseInt(e.target.dataset.row, 10),
-                    cell: e.target.cellIndex
-                }
-            });
+                    key: e.target.dataset.key
+                } });
         }
     }, {
         key: '_save',
         value: function _save(e) {
             e.preventDefault();
-            var input = e.target.firstChild,
-                data = Array.from(this.state.data);
-            data[this.state.edit.row][this.state.edit.cell] = input.value;
-            this._logSetState({
+            var value = this.refs.input.getValue();
+            var data = Array.from(this.state.data);
+            data[this.state.edit.row][this.state.edit.key] = value;
+            this.setState({
                 edit: null,
                 data: data
             });
+            this._fireDataChange(data);
+        }
+    }, {
+        key: '_actionClick',
+        value: function _actionClick(rowidx, action) {
+            this.setState({ dialog: { type: action, idx: rowidx } });
+        }
+    }, {
+        key: '_deleteConfirmationClick',
+        value: function _deleteConfirmationClick(action) {
+            if (action === 'dismiss') {
+                this._closeDialog();
+                return;
+            }
+            var data = Array.from(this.state.data);
+            data.splice(this.state.dialog.idx, 1);
+            this.setState({
+                dialog: null,
+                data: data
+            });
+            this._fireDataChange(data);
+        }
+    }, {
+        key: '_closeDialog',
+        value: function _closeDialog() {
+            this.setState({ dialog: null });
+        }
+    }, {
+        key: '_saveDataDialog',
+        value: function _saveDataDialog(action) {
+            if (action === 'dismiss') {
+                this._closeDialog();
+                return;
+            }
+            var data = Array.from(this.state.data);
+            data[this.state.dialog.idx] = this.refs.form.getData();
+            this.setState({
+                dialog: null,
+                data: data
+            });
+            this._fireDataChange(data);
+        }
+    }, {
+        key: 'render',
+        value: function render() {
+            return React.createElement(
+                'div',
+                { className: 'Excel' },
+                this._renderTable(),
+                this._renderDialog()
+            );
+        }
+    }, {
+        key: '_renderDialog',
+        value: function _renderDialog() {
+            if (!this.state.dialog) {
+                return null;
+            }
+            switch (this.state.dialog.type) {
+                case 'delete':
+                    return this._renderDeleteDialog();
+                case 'info':
+                    return this._renderFormDialog(true);
+                case 'edit':
+                    return this._renderFormDialog();
+                default:
+                    throw Error('Unexpected dialog type ' + this.state.dialog.type);
+            }
+        }
+    }, {
+        key: '_renderDeleteDialog',
+        value: function _renderDeleteDialog() {
+            var first = this.state.data[this.state.dialog.idx];
+            var nameguess = first[Object.keys(first)[0]];
+            return React.createElement(
+                _Dialog2.default,
+                {
+                    modal: true,
+                    header: 'Confirm deletion',
+                    confirmLabel: 'Delete',
+                    onAction: this._deleteConfirmationClick.bind(this)
+                },
+                'Are you sure you want to delete "' + nameguess + '"?'
+            );
+        }
+    }, {
+        key: '_renderFormDialog',
+        value: function _renderFormDialog(readonly) {
+            return React.createElement(
+                _Dialog2.default,
+                {
+                    modal: true,
+                    header: readonly ? 'Item info' : 'Edit item',
+                    confirmLabel: readonly ? 'ok' : 'Save',
+                    hasCancel: !readonly,
+                    onAction: this._saveDataDialog.bind(this)
+                },
+                React.createElement(_Form2.default, {
+                    ref: 'form',
+                    fields: this.props.schema,
+                    initialData: this.state.data[this.state.dialog.idx],
+                    readonly: readonly })
+            );
         }
     }, {
         key: '_renderTable',
@@ -93,172 +221,75 @@ var Excel = function (_React$Component) {
                     React.createElement(
                         'tr',
                         null,
-                        this.props.headers.map(function (title, id) {
-                            if (_this2.state.sortBy === id) title += _this2.state.descending ? ' \u2191' : ' \u2193';
+                        this.props.schema.map(function (item) {
+                            if (!item.show) {
+                                return null;
+                            }
+                            var title = item.label;
+                            if (_this2.state.sortby === item.id) {
+                                title += _this2.state.descending ? ' \u2191' : ' \u2193';
+                            }
                             return React.createElement(
                                 'th',
-                                { key: id, onClick: _this2._sort },
+                                {
+                                    className: 'schema-' + item.id,
+                                    key: item.id,
+                                    onClick: _this2._sort.bind(_this2, item.id)
+                                },
                                 title
                             );
-                        })
+                        }, this),
+                        React.createElement(
+                            'th',
+                            { className: 'ExcelNotSortable' },
+                            'Actions'
+                        )
                     )
                 ),
                 React.createElement(
                     'tbody',
-                    { onDoubleClick: this._showEditor },
-                    this._renderSearch(),
-                    this.state.data.map(function (row, rowId) {
+                    { onDoubleClick: this._showEditor.bind(this) },
+                    this.state.data.map(function (row, rowidx) {
                         return React.createElement(
                             'tr',
-                            { key: rowId },
-                            row.map(function (cell, id) {
-                                var content = cell,
-                                    edit = _this2.state.edit;
-                                if (edit && edit.row === rowId && edit.cell === id) {
+                            { key: rowidx },
+                            Object.keys(row).map(function (cell, idx) {
+                                var _classNames;
+
+                                var schema = _this2.props.schema[idx];
+                                if (!schema || !schema.show) {
+                                    return null;
+                                }
+                                var isRating = schema.type === 'rating';
+                                var edit = _this2.state.edit;
+                                var content = row[cell];
+                                if (!isRating && edit && edit.row === rowidx && edit.key === schema.id) {
                                     content = React.createElement(
                                         'form',
-                                        { onSubmit: _this2._save },
-                                        React.createElement('input', { type: 'text', defaultValue: content })
+                                        { onSubmit: _this2._save.bind(_this2) },
+                                        React.createElement(_FormInput2.default, _extends({ ref: 'input' }, schema, { defaultValue: content }))
                                     );
+                                } else if (isRating) {
+                                    content = React.createElement(_Rating2.default, { readonly: true, defaultValue: Number(content) });
                                 }
                                 return React.createElement(
                                     'td',
-                                    { key: id, 'data-row': rowId },
+                                    {
+                                        className: (0, _classnames2.default)((_classNames = {}, _defineProperty(_classNames, 'schema-' + schema.id, true), _defineProperty(_classNames, 'ExcelEditable', !isRating), _defineProperty(_classNames, 'ExcelDataLeft', schema.align === 'left'), _defineProperty(_classNames, 'ExcelDataRight', schema.align === 'right'), _defineProperty(_classNames, 'ExcelDataCenter', schema.align !== 'left' && schema.align !== 'right'), _classNames)),
+                                        key: idx,
+                                        'data-row': rowidx,
+                                        'data-key': schema.id },
                                     content
                                 );
-                            })
+                            }, _this2),
+                            React.createElement(
+                                'td',
+                                { className: 'ExcelDataCenter' },
+                                React.createElement(_Actions2.default, { onAction: _this2._actionClick.bind(_this2, rowidx) })
+                            )
                         );
-                    })
+                    }, this)
                 )
-            );
-        }
-    }, {
-        key: '_renderToolbar',
-        value: function _renderToolbar() {
-            return React.createElement(
-                'div',
-                { className: 'toolbar' },
-                React.createElement(
-                    'button',
-                    { onClick: this._toggleSearch.bind(this) },
-                    'Search'
-                ),
-                React.createElement(
-                    'a',
-                    { href: 'data.json', onClick: this._download.bind(this, "json") },
-                    'Export JSON'
-                ),
-                React.createElement(
-                    'a',
-                    { href: 'data.csv', onClick: this._download.bind(this, "csv") },
-                    'Export CSV'
-                )
-            );
-        }
-    }, {
-        key: '_download',
-        value: function _download(format, ev) {
-            var contents = format === "json" ? JSON.stringify(this.state.data) : this.state.data.reduce(function (result, row) {
-                return result + row.reduce(function (rowResult, cell, idx) {
-                    return rowResult + '"' + cell.replace(/"/g, '""') + '"' + (idx < row.length - 1 ? "," : "");
-                }, "") + "\n";
-            }, ""),
-                URL = window.URL || window.webkitURL,
-                blob = new Blob([contents], { type: 'text/' + format });
-            ev.target.href = URL.createObjectURL(blob);
-            ev.target.download = 'data.' + format;
-        }
-    }, {
-        key: '_renderSearch',
-        value: function _renderSearch() {
-            if (!this.state.search) {
-                return false;
-            }
-            return React.createElement(
-                'tr',
-                { onChange: this._search },
-                this.props.headers.map(function (_ignore, id) {
-                    return React.createElement(
-                        'td',
-                        { key: id },
-                        React.createElement('input', { type: 'text', 'data-id': id })
-                    );
-                })
-            );
-        }
-    }, {
-        key: '_toggleSearch',
-        value: function _toggleSearch() {
-            if (this.state.search) {
-                this._logSetState({
-                    data: this._preSearchData,
-                    search: false
-                });
-                this._preSearchData = null;
-            } else {
-                this._preSearchData = this.state.data;
-                this._logSetState({
-                    search: true
-                });
-            }
-        }
-    }, {
-        key: '_search',
-        value: function _search(e) {
-            var needle = e.target.value.toLowerCase(),
-                id = e.target.dataset.id,
-                searchData = void 0;
-            if (!needle) {
-                this._logSetState({
-                    data: this._preSearchData
-                });
-            }
-            searchData = this._preSearchData.filter(function (row) {
-                return row[id].toString().toLowerCase().indexOf(needle) > -1;
-            });
-            this._logSetState({
-                data: searchData
-            });
-        }
-    }, {
-        key: '_logSetState',
-        value: function _logSetState(newState) {
-            this._log.push(JSON.parse(JSON.stringify(this._log.length === 0 ? this.state : newState)));
-            this.setState(newState);
-        }
-    }, {
-        key: 'componentDidMount',
-        value: function componentDidMount() {
-            document.onkeydown = function (e) {
-                if (e.shiftKey && e.altKey && e.keyCode === 82) {
-                    this._replay();
-                }
-            }.bind(this);
-        }
-    }, {
-        key: '_replay',
-        value: function _replay() {
-            if (this._log.length === 0) {
-                console.warn("No state ro replay yet");
-                return;
-            }
-            var idx = -1,
-                interval = setInterval(function () {
-                idx++;
-                if (idx === this._log.length - 1) {
-                    clearInterval(interval);
-                }
-                this.setState(this._log[idx]);
-            }.bind(this), 1000);
-        }
-    }, {
-        key: 'render',
-        value: function render() {
-            return React.createElement(
-                'div',
-                { className: 'Excel' },
-                this._renderToolbar(),
-                this._renderTable()
             );
         }
     }]);
@@ -266,9 +297,10 @@ var Excel = function (_React$Component) {
     return Excel;
 }(React.Component);
 
-exports.default = Excel;
-
-Excel.PropTypes = {
-    headers: PropTypes.arrayOf(PropTypes.string),
-    initialData: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.string))
+Excel.propTypes = {
+    schema: PropTypes.arrayOf(PropTypes.object),
+    initialData: PropTypes.arrayOf(PropTypes.object),
+    onDataChange: PropTypes.func
 };
+
+exports.default = Excel;

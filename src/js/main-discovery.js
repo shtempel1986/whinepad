@@ -1,25 +1,25 @@
-'use strict';
+"use strict";
 
-var _Form = require('./components/Form');
+var _Actions = require("./components/Actions");
 
-var _Form2 = _interopRequireDefault(_Form);
+var _Actions2 = _interopRequireDefault(_Actions);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 ReactDOM.render(React.createElement(
-    'div',
+    "div",
     null,
     React.createElement(
-        'h1',
+        "h1",
         null,
-        'Discover Component!'
+        "Discover Component!"
     ),
     React.createElement(
-        'h2',
+        "h2",
         null,
-        'Form '
+        "Actions"
     ),
-    React.createElement(_Form2.default, {
-        fields: [{ label: 'Rating', type: 'rating', id: 'rateme' }, { label: 'Greetings', id: 'freetext' }],
-        initialData: { rateme: 4, freetext: 'Hello' } })
+    React.createElement(_Actions2.default, { onAction: function onAction(type) {
+            return alert(type);
+        } })
 ), document.getElementById("discovery"));
