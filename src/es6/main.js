@@ -1,21 +1,21 @@
-/**
- * Created by Павел on 16.04.2017.
- */
-import Excel from "./components/Excel";
-import Logo from "./components/Logo"
+import Logo from "./components/Logo";
+import Whinepad from "./components/Whinepad";
+import schema from "./schema";
 
-let headers = localStorage.getItem("headers"), data = localStorage.getItem("data");
-if(!headers){
-    headers = ['Title', 'Year', 'Rating', 'Comments'];
-    data = [['Test', '2015', '3', 'meh']];
+let data = JSON.parse(localStorage.getItem("data"));
+
+if (!data) {
+    data = {};
+    schema.forEach(item => data[item.id] = item.sample);
+    data = [data];
 }
 
 ReactDOM.render(
     <div>
-        <h1>
-            <Logo/>Welcome to Whinepad!
-        </h1>
-        <Excel headers={headers} initialData={data}/>
+        <div className="app-header">
+            <Logo/> Welcome to Whinepad!
+        </div>
+        <Whinepad schema={schema} initialData={data}/>
     </div>,
     document.getElementById("pad")
 );

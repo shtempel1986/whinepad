@@ -10,7 +10,7 @@ var _classification2 = _interopRequireDefault(_classification);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-exports.default = [{
+var schema = [{
     id: 'name',
     label: 'Name',
     show: true,
@@ -42,3 +42,5 @@ exports.default = [{
     type: 'text',
     sample: 'Nice for the price'
 }];
+
+exports.default = schema;

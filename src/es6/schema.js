@@ -1,6 +1,5 @@
 import classification from './classification';
-
-export default [
+let schema = [
     {
         id: 'name',
         label: 'Name',
@@ -37,4 +36,6 @@ export default [
         type: 'text',
         sample: 'Nice for the price',
     },
-]
+];
+
+export default schema;

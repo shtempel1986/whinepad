@@ -1,33 +1,37 @@
 "use strict";
 
-var _Excel = require("./components/Excel");
-
-var _Excel2 = _interopRequireDefault(_Excel);
-
 var _Logo = require("./components/Logo");
 
 var _Logo2 = _interopRequireDefault(_Logo);
 
+var _Whinepad = require("./components/Whinepad");
+
+var _Whinepad2 = _interopRequireDefault(_Whinepad);
+
+var _schema = require("./schema");
+
+var _schema2 = _interopRequireDefault(_schema);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-/**
- * Created by Павел on 16.04.2017.
- */
-var headers = localStorage.getItem("headers"),
-    data = localStorage.getItem("data");
-if (!headers) {
-    headers = ['Title', 'Year', 'Rating', 'Comments'];
-    data = [['Test', '2015', '3', 'meh']];
+var data = JSON.parse(localStorage.getItem("data"));
+
+if (!data) {
+    data = {};
+    _schema2.default.forEach(function (item) {
+        return data[item.id] = item.sample;
+    });
+    data = [data];
 }
 
 ReactDOM.render(React.createElement(
     "div",
     null,
     React.createElement(
-        "h1",
-        null,
+        "div",
+        { className: "app-header" },
         React.createElement(_Logo2.default, null),
-        "Welcome to Whinepad!"
+        " Welcome to Whinepad!"
     ),
-    React.createElement(_Excel2.default, { headers: headers, initialData: data })
+    React.createElement(_Whinepad2.default, { schema: _schema2.default, initialData: data })
 ), document.getElementById("pad"));
